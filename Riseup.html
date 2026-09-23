@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#101114">
+<link rel="manifest" href='data:application/manifest+json,{"name":"Riseup","short_name":"Riseup","start_url":".","display":"standalone","background_color":"%23101114","theme_color":"%23101114"}'>
+<title>Riseup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#101114; --bg2:#17181c; --card:#1d1f24; --line:#2a2c32;
+  --text:#f2f3f5; --muted:#8b8f98;
+  --accent:#c8ff4d; --accent-dim:#4a5a1e;
+  --danger:#ff5d5d;
+  --radius:18px;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f5f5f2;--bg2:#ffffff;--card:#ffffff;--line:#e3e3de;
+    --text:#101114;--muted:#6b6f76;--accent-dim:#eaffbf;
+  }
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100%;
+}
+h1,h2,h3,.brand,.big-time{font-family:'Space Grotesk',system-ui,sans-serif;}
+#app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+.screen{display:none;flex-direction:column;flex:1;padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));}
+.screen.active{display:flex;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top,0px)) 4px 8px;}
+.brand{font-size:20px;font-weight:700;letter-spacing:-0.02em;}
+.brand span{color:var(--accent);}
+.pill{font-size:12px;padding:5px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted);}
+.pill.pro{background:var(--accent-dim);color:var(--accent);border-color:transparent;font-weight:600;}
+
+.alarm-list{display:flex;flex-direction:column;gap:12px;margin-top:16px;}
+.alarm-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;}
+.alarm-time{font-size:28px;font-weight:700;}
+.alarm-meta{color:var(--muted);font-size:13px;margin-top:4px;}
+.switch{width:44px;height:26px;border-radius:999px;background:var(--line);position:relative;flex-shrink:0;cursor:pointer;transition:.2s;}
+.switch.on{background:var(--accent);}
+.switch::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--bg2);transition:.2s;}
+.switch.on::after{transform:translateX(18px);}
+
+.fab{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);max-width:440px;width:calc(100% - 40px);background:var(--accent);color:#101114;border:none;border-radius:16px;padding:16px;font-size:16px;font-weight:700;font-family:'Space Grotesk';cursor:pointer;}
+
+.field{margin-top:18px;}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px;}
+input[type=time]{width:100%;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:16px;font-size:22px;font-family:'Space Grotesk';}
+.days{display:flex;gap:6px;flex-wrap:wrap;}
+.day{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;}
+.day.on{background:var(--accent);color:#101114;border-color:var(--accent);font-weight:600;}
+.task-opt{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;cursor:pointer;}
+.task-opt.sel{border-color:var(--accent);}
+.task-opt .lock{color:var(--muted);font-size:12px;}
+.task-name{font-weight:600;font-size:15px;}
+.task-sub{color:var(--muted);font-size:12px;margin-top:2px;}
+.stepper{display:flex;align-items:center;gap:14px;margin-top:6px;}
+.stepper button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:18px;cursor:pointer;}
+.stepper .val{font-size:20px;font-weight:700;font-family:'Space Grotesk';min-width:40px;text-align:center;}
+
+.btn{border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter';}
+.btn-primary{background:var(--accent);color:#101114;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line);}
+.btn-full{width:100%;}
+
+/* Ringing screen */
+#screen-ring{background:var(--bg);}
+.ring-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;}
+.ring-wrap .big-time{font-size:56px;font-weight:700;}
+.ring-wrap .ring-label{color:var(--muted);font-size:14px;}
+.progress-track{width:100%;height:10px;background:var(--card);border-radius:999px;margin:22px 0;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .25s;}
+.math-problem{font-size:38px;font-weight:700;font-family:'Space Grotesk';margin:18px 0 10px;}
+.math-input{width:140px;text-align:center;font-size:26px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);}
+.shake-icon{font-size:64px;}
+.hint{color:var(--muted);font-size:13px;margin-top:14px;}
+
+/* Paywall */
+.plan{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.plan.sel{border-color:var(--accent);}
+.plan .price{font-size:22px;font-weight:700;font-family:'Space Grotesk';}
+.plan .save{color:var(--accent);font-size:12px;font-weight:600;}
+.banner{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:13px;color:var(--muted);margin-top:16px;line-height:1.5;}
+
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+.stat-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;}
+.stat-num{font-size:28px;font-weight:700;font-family:'Space Grotesk';}
+.stat-label{color:var(--muted);font-size:12px;margin-top:4px;}
+
+.nav{display:flex;border-top:1px solid var(--line);padding:10px 20px calc(10px + env(safe-area-inset-bottom,0px));gap:8px;}
+.nav button{flex:1;background:none;border:none;color:var(--muted);font-size:12px;padding:6px;cursor:pointer;}
+.nav button.active{color:var(--accent);font-weight:600;}
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;}
+.toast.show{opacity:1;}
+
+#gate{display:none;position:fixed;inset:0;background:var(--bg);z-index:999;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;}
+#gate .phone-icon{font-size:52px;margin-bottom:18px;}
+#gate h2{font-size:22px;margin:0 0 10px;font-family:'Space Grotesk';}
+#gate p{color:var(--muted);font-size:14px;max-width:320px;line-height:1.6;margin:0 0 18px;}
+#gate .link-box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;font-size:13px;color:var(--text);word-break:break-all;max-width:320px;}
+</style>
+</head>
+<body>
+<div id="gate">
+  <div class="phone-icon">📱</div>
+  <h2>Riseup is built for your phone</h2>
+  <p>This app only works properly on a mobile device — it needs your phone's motion sensors and camera to verify your tasks. Open this link on your phone instead.</p>
+  <div class="link-box" id="gate-link"></div>
+</div>
+<div id="app">
+
+  <!-- HOME -->
+  <section class="screen active" id="screen-home">
+    <div class="topbar">
+      <div class="brand">Rise<span>up</span></div>
+      <div class="pill" id="acct-pill">Guest</div>
+    </div>
+    <div class="alarm-list" id="alarm-list"></div>
+    <div style="height:90px"></div>
+  </section>
+
+  <!-- SET ALARM -->
+  <section class="screen" id="screen-set">
+    <div class="topbar">
+      <button class="btn-ghost btn" onclick="go('home')" style="padding:8px 14px">Cancel</button>
+      <div style="font-weight:600">New alarm</div>
+      <button class="btn btn-primary" style="padding:8px 14px" onclick="saveAlarm()">Save</button>
+    </div>
+    <div class="field">
+      <label>Time</label>
+      <input type="time" id="in-time" value="06:30">
+    </div>
+    <div class="field">
+      <label>Repeat</label>
+      <div class="days" id="days"></div>
+    </div>
+    <div class="field">
+      <label>Task to stop the alarm</label>
+      <div class="task-opt sel" data-task="math" onclick="pickTask('math')">
+        <div><div class="task-name">Math problem</div><div class="task-sub">Solve 5 problems in a row</div></div>
+      </div>
+      <div class="task-opt" data-task="shake" onclick="pickTask('shake')">
+        <div><div class="task-name">Shake phone</div><div class="task-sub">Shake hard enough, enough times</div></div>
+      </div>
+      <div class="task-opt" data-task="pushup" onclick="pickTask('pushup')">
+        <div><div class="task-name">Push-ups (camera)</div><div class="task-sub">Verified with your camera</div></div>
+        <div class="lock" id="lock-pushup">🔒 Pro</div>
+      </div>
+      <div class="task-opt" data-task="squat" onclick="pickTask('squat')">
+        <div><div class="task-name">Squats (camera)</div><div class="task-sub">Verified with your camera</div></div>
+        <div class="lock" id="lock-squat">🔒 Pro</div>
+      </div>
+    </div>
+    <div class="field" id="target-field">
+      <label>Target</label>
+      <div class="stepper">
+        <button onclick="stepTarget(-1)">−</button>
+        <div class="val" id="target-val">5</div>
+        <button onclick="stepTarget(1)">+</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RINGING -->
+  <section class="screen" id="screen-ring">
+    <div class="ring-wrap">
+      <div class="ring-label" id="ring-label">Push-ups to dismiss</div>
+      <div class="big-time" id="ring-time">06:30</div>
+      <div class="progress-track"><div class="progress-fill" id="ring-progress"></div></div>
+
+      <div id="task-math" style="display:none">
+        <div class="math-problem" id="math-q">4 + 7</div>
+        <input class="math-input" id="math-in" inputmode="numeric" placeholder="?">
+        <div><button class="btn btn-primary" style="margin-top:14px" onclick="checkMath()">Submit</button></div>
+      </div>
+
+      <div id="task-shake" style="display:none">
+        <div class="shake-icon">📳</div>
+        <div class="hint">Shake your phone to count reps — <span id="shake-count">0</span>/<span id="shake-target">10</span></div>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="simShake()">Tap to simulate shake</button>
+      </div>
+
+      <div id="task-cam" style="display:none">
+        <div class="shake-icon">🏋️</div>
+        <div class="hint">Camera rep-counting needs the native app build — tap below to log a verified rep for this demo.</div>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="simRep()">Log rep (demo)</button>
+      </div>
+
+      <div class="hint" id="ring-hint">Complete the task to silence the alarm.</div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="screen" id="screen-stats">
+    <div class="topbar"><div class="brand">Stats</div></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num" id="stat-streak">0</div><div class="stat-label">Current streak</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-best">0</div><div class="stat-label">Best streak</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Alarms beaten</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-avg">—</div><div class="stat-label">Avg. task time</div></div>
+    </div>
+    <div class="banner">Streaks and stats are saved on this device. Create an account so they sync if you switch phones.</div>
+  </section>
+
+  <!-- PAYWALL -->
+  <section class="screen" id="screen-pay">
+    <div class="topbar"><div class="brand">Riseup <span style="color:var(--accent)">Pro</span></div></div>
+    <div style="color:var(--muted);font-size:14px;margin-top:6px">Unlock unlimited alarms, camera-verified tasks, and full stats.</div>
+    <div class="plan sel" data-plan="year" onclick="pickPlan('year')">
+      <div><div class="task-name">Yearly</div><div class="save">Best value — save ~67%</div></div>
+      <div class="price">₹999<span style="font-size:12px;color:var(--muted)">/yr</span></div>
+    </div>
+    <div class="plan" data-plan="month" onclick="pickPlan('month')">
+      <div><div class="task-name">Monthly</div></div>
+      <div class="price">₹250<span style="font-size:12px;color:var(--muted)">/mo</span></div>
+    </div>
+    <button class="btn btn-primary btn-full" style="margin-top:20px" onclick="pay()">Start 1-day free trial</button>
+    <div class="banner">Payments run through Razorpay. In this preview, checkout is simulated — a real build needs a small backend to verify the payment signature before unlocking Pro.</div>
+  </section>
+
+  <!-- ACCOUNT -->
+  <section class="screen" id="screen-acct">
+    <div class="topbar"><div class="brand">Account</div></div>
+    <div id="acct-guest">
+      <div class="banner">You're using Riseup as a guest. Your alarms and streak are only on this device.</div>
+      <div class="field"><label>Email</label><input type="email" id="signup-email" placeholder="you@email.com" style="width:100%;padding:14px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--text);"></div>
+      <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="signup()">Create account</button>
+    </div>
+    <div id="acct-full" style="display:none">
+      <div class="banner">Signed in as <span id="acct-email"></span>. Your data syncs to this account.</div>
+      <button class="btn btn-ghost btn-full" style="margin-top:14px" onclick="signout()">Sign out</button>
+    </div>
+  </section>
+
+  <div class="nav">
+    <button onclick="go('home')" id="nav-home">Alarms</button>
+    <button onclick="go('stats')" id="nav-stats">Stats</button>
+    <button onclick="go('pay')" id="nav-pay">Pro</button>
+    <button onclick="go('acct')" id="nav-acct">Account</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ---------- state ----------
+const store = k => JSON.parse(localStorage.getItem(k) || 'null');
+const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+let alarms = store('ru_alarms') || [];
+let account = store('ru_account') || null; // {email}
+let pro = store('ru_pro') || false;
+let stats = store('ru_stats') || {streak:0,best:0,total:0,times:[]};
+let selDays = new Set();
+let selTask = 'math';
+let target = 5;
+let selPlan = 'year';
+let ring = null; // active alarm session
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+// ---------- nav ----------
+function go(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  const navBtn = document.getElementById('nav-'+name);
+  if(navBtn) navBtn.classList.add('active');
+  if(name==='stats') renderStats();
+  if(name==='acct') renderAccount();
+}
+
+// ---------- days picker ----------
+const dayLabels=['S','M','T','W','T','F','S'];
+const daysEl=document.getElementById('days');
+dayLabels.forEach((d,i)=>{
+  const el=document.createElement('div');
+  el.className='day'; el.textContent=d;
+  el.onclick=()=>{el.classList.toggle('on'); el.classList.contains('on')?selDays.add(i):selDays.delete(i);};
+  daysEl.appendChild(el);
+});
+
+function pickTask(t){
+  if((t==='pushup'||t==='squat') && !pro){ go('pay'); toast('Camera tasks need Pro'); return; }
+  selTask=t;
+  document.querySelectorAll('.task-opt').forEach(o=>o.classList.toggle('sel', o.dataset.task===t));
+}
+function stepTarget(d){ target=Math.max(1,target+d); document.getElementById('target-val').textContent=target; }
+
+function updateLocks(){
+  document.getElementById('lock-pushup').style.display = pro?'none':'block';
+  document.getElementById('lock-squat').style.display = pro?'none':'block';
+}
+
+// ---------- alarm list ----------
+function renderAlarms(){
+  const list=document.getElementById('alarm-list');
+  list.innerHTML='';
+  if(alarms.length===0){
+    list.innerHTML='<div class="banner">No alarms yet. Add one below — you\'ll have to earn the silence.</div>';
+  }
+  alarms.forEach((a,i)=>{
+    const card=document.createElement('div'); card.className='alarm-card';
+    const days = a.days.length? a.days.map(d=>dayLabels[d]).join(' ') : 'Once';
+    const taskName = {math:'Math problem',shake:'Shake phone',pushup:'Push-ups',squat:'Squats'}[a.task];
+    card.innerHTML = `<div><div class="alarm-time">${a.time}</div><div class="alarm-meta">${days} · ${taskName} · ${a.target}</div></div>`;
+    const sw=document.createElement('div'); sw.className='switch'+(a.on?' on':'');
+    sw.onclick=()=>{a.on=!a.on; save('ru_alarms',alarms); renderAlarms();};
+    card.appendChild(sw);
+    list.appendChild(card);
+  });
+  document.getElementById('acct-pill').textContent = pro ? 'Pro' : (account? 'Free':'Guest');
+  document.getElementById('acct-pill').className = 'pill'+(pro?' pro':'');
+}
+
+function saveAlarm(){
+  if(!pro && alarms.length>=1){ toast('Free plan allows 1 alarm'); go('pay'); return; }
+  alarms.push({time:document.getElementById('in-time').value, days:[...selDays], task:selTask, target, on:true});
+  save('ru_alarms',alarms);
+  renderAlarms();
+  go('home');
+}
+
+document.querySelector('.fab-placeholder');
+document.getElementById('screen-home').insertAdjacentHTML('beforeend', '<button class="fab" onclick="openNew()">+ Add alarm</button>');
+function openNew(){
+  selDays=new Set(); document.querySelectorAll('.day').forEach(d=>d.classList.remove('on'));
+  selTask='math'; target=5; document.getElementById('target-val').textContent=5;
+  document.querySelectorAll('.task-opt').forEach(o=>o.classList.toggle('sel',o.dataset.task==='math'));
+  updateLocks();
+  go('set');
+}
+
+// ---------- ringing / tasks ----------
+function fireAlarm(a){
+  ring = {alarm:a, progress:0, need:a.target, startedAt:Date.now(), math:{streak:0}, shakeCount:0};
+  document.getElementById('ring-time').textContent = a.time;
+  const label={math:'Solve problems to dismiss',shake:'Shake phone to dismiss',pushup:'Push-ups to dismiss',squat:'Squats to dismiss'}[a.task];
+  document.getElementById('ring-label').textContent = label;
+  document.getElementById('task-math').style.display = a.task==='math' ? 'block':'none';
+  document.getElementById('task-shake').style.display = a.task==='shake' ? 'block':'none';
+  document.getElementById('task-cam').style.display = (a.task==='pushup'||a.task==='squat') ? 'block':'none';
+  document.getElementById('shake-target').textContent = a.target;
+  document.getElementById('shake-count').textContent = 0;
+  updateProgress();
+  if(a.task==='math') newMathProblem();
+  go('ring');
+  startBeep();
+}
+function updateProgress(){
+  document.getElementById('ring-progress').style.width = Math.min(100, (ring.progress/ring.need)*100)+'%';
+}
+function newMathProblem(){
+  const a=Math.floor(Math.random()*40)+5, b=Math.floor(Math.random()*20)+1;
+  ring.mathAns=a+b;
+  document.getElementById('math-q').textContent=`${a} + ${b}`;
+  document.getElementById('math-in').value='';
+}
+function checkMath(){
+  const v=Number(document.getElementById('math-in').value);
+  if(v===ring.mathAns){ ring.progress++; updateProgress(); newMathProblem(); }
+  else toast('Not quite — try the next one');
+  if(ring.progress>=ring.need) completeAlarm();
+}
+function simShake(){
+  ring.progress++; document.getElementById('shake-count').textContent=ring.progress; updateProgress();
+  if(ring.progress>=ring.need) completeAlarm();
+}
+function simRep(){
+  ring.progress++; updateProgress();
+  if(ring.progress>=ring.need) completeAlarm();
+}
+function completeAlarm(){
+  stopBeep();
+  const secs = Math.round((Date.now()-ring.startedAt)/1000);
+  stats.total++; stats.streak++; stats.best=Math.max(stats.best,stats.streak); stats.times.push(secs);
+  save('ru_stats',stats);
+  ring=null;
+  toast('Alarm dismissed — nice work');
+  go('home');
+}
+
+// simple beep loop using Web Audio (no external files)
+let actx, osc, beepTimer;
+function startBeep(){
+  try{
+    actx = new (window.AudioContext||window.webkitAudioContext)();
+    const ping=()=>{
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.frequency.value=880; o.connect(g); g.connect(actx.destination);
+      g.gain.setValueAtTime(0.15, actx.currentTime);
+      o.start(); o.stop(actx.currentTime+0.15);
+    };
+    ping(); beepTimer=setInterval(ping, 600);
+  }catch(e){}
+}
+function stopBeep(){ if(beepTimer) clearInterval(beepTimer); if(actx) actx.close().catch(()=>{}); }
+
+// ---------- devicemotion real shake (best-effort) ----------
+let lastShakeT=0;
+window.addEventListener('devicemotion', e=>{
+  if(!ring || ring.alarm.task!=='shake') return;
+  const acc=e.accelerationIncludingGravity; if(!acc) return;
+  const mag=Math.abs(acc.x||0)+Math.abs(acc.y||0)+Math.abs(acc.z||0);
+  const now=Date.now();
+  if(mag>28 && now-lastShakeT>350){ lastShakeT=now; simShake(); }
+});
+
+// ---------- pay / pro ----------
+function pickPlan(p){ selPlan=p; document.querySelectorAll('.plan').forEach(el=>el.classList.toggle('sel', el.dataset.plan===p)); }
+function pay(){
+  pro=true; save('ru_pro',true); updateLocks(); renderAlarms();
+  toast('Pro unlocked (demo checkout) — trial started');
+  go('home');
+}
+
+// ---------- account ----------
+function renderAccount(){
+  document.getElementById('acct-guest').style.display = account? 'none':'block';
+  document.getElementById('acct-full').style.display = account? 'block':'none';
+  if(account) document.getElementById('acct-email').textContent=account.email;
+}
+function signup(){
+  const email=document.getElementById('signup-email').value.trim();
+  if(!email.includes('@')){ toast('Enter a valid email'); return; }
+  account={email}; save('ru_account',account);
+  toast('Account created — your data now syncs');
+  renderAccount(); renderAlarms();
+}
+function signout(){ account=null; save('ru_account',null); renderAccount(); renderAlarms(); }
+
+// ---------- stats ----------
+function renderStats(){
+  document.getElementById('stat-streak').textContent=stats.streak;
+  document.getElementById('stat-best').textContent=stats.best;
+  document.getElementById('stat-total').textContent=stats.total;
+  const avg = stats.times.length? Math.round(stats.times.reduce((a,b)=>a+b,0)/stats.times.length)+'s' : '—';
+  document.getElementById('stat-avg').textContent=avg;
+}
+
+// ---------- clock check (best-effort while tab is open) ----------
+setInterval(()=>{
+  if(ring) return;
+  const now=new Date();
+  const hh=String(now.getHours()).padStart(2,'0'), mm=String(now.getMinutes()).padStart(2,'0');
+  const cur=`${hh}:${mm}`;
+  const day=now.getDay();
+  alarms.forEach(a=>{
+    if(!a.on) return;
+    if(a.time===cur && now.getSeconds()===0){
+      if(a.days.length===0 || a.days.includes(day)) fireAlarm(a);
+    }
+  });
+}, 1000);
+
+// try to request a wake lock so the screen doesn't sleep while an alarm could fire
+if('wakeLock' in navigator){
+  document.addEventListener('visibilitychange', async ()=>{
+    if(document.visibilityState==='visible'){ try{ await navigator.wakeLock.request('screen'); }catch(e){} }
+  });
+}
+
+updateLocks();
+renderAlarms();
+
+// ---------- mobile-only gate ----------
+function isPhone(){
+  const uaMobile = /Android|iPhone|iPod|Mobile|Windows Phone/i.test(navigator.userAgent);
+  const coarsePointer = window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
+  const narrow = Math.min(window.innerWidth, window.innerHeight) <= 500;
+  return uaMobile || (coarsePointer && narrow);
+}
+if(!isPhone()){
+  document.getElementById('app').style.display='none';
+  document.querySelector('.nav').style.display='none';
+  const gate=document.getElementById('gate');
+  gate.style.display='flex';
+  document.getElementById('gate-link').textContent = location.href;
+}
+</script>
+</body>
+</html>
